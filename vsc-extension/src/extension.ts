@@ -26,9 +26,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 		let p = path.relative(workspace?.uri.fsPath!, editor.document.uri.fsPath);
 
+		console.log(p);
 
 		const form = new FormData();
-		
+
 		form.append('files[]', fs.createReadStream(editor.document.uri.fsPath));
 
 		const request_config = {

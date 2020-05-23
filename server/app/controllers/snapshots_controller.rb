@@ -1,8 +1,10 @@
 class SnapshotsController < ApplicationController
   def index
-    puts params
+    @snapshots = Snapshot.all
+  end
 
-    render plain: "hi"
+  def show
+    @snapshot = Snapshot.find(params[:id])
   end
 
   def create

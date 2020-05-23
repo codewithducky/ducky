@@ -1,0 +1,13 @@
+<h1>Hello!</h1>
+
+<ul>
+    <% @snapshots.each do |snapshot| %>
+        <li>Hello
+            <ul>
+                <% snapshot.files.each do |file| %>
+                    <li><a href="<%= url_for(file) %>"><%= file.blob.filename %></a></li>
+                <% end %>
+            </ul>
+        </li>
+    <% end %>
+</ul>
