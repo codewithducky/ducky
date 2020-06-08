@@ -1,6 +1,9 @@
 import * as express from 'express';
 import * as serveStatic from 'serve-static';
 
+import * as path from 'path';
+import * as fs from 'fs';
+
 export default class Live {
     public static instances : Record<string, Live> = {};
 
@@ -24,18 +27,38 @@ export default class Live {
 
     private staticHandler : express.Handler;
 
-    constructor(path : string) {
+    constructor(p : string) {
+        this.port = 1720;
         this.app = express();
-        this.staticHandler = serveStatic(path);
+        this.staticHandler = serveStatic(p);
 
-        this.app.get("/error", (req, res) => {
-            console.log(req);  
+        this.app.get("/.well-known/error", (req, res) => {
+            res.end();
+        })
+
+        this.app.get("/.well-known/ducky.js", (req, res) => {
+            res.set('Content-Type', 'text/javascript');
+            res.write(`
+console.log("successfully injected ducky code");
+window.addEventListener('error', function (e) {
+    console.log("making error");
+    console.log(e);
+    fetch("/.well-known/error?message=" + e.message)
+})
+            `);
+            res.end();
         })
 
         this.app.use((req, res, next) => {
-            if (req.path == "/") {
-                // TODO(harrison): inject code here
-                console.log("going for HTML, inject some functionality here!");
+            if (req.path == "/" || req.path == "/index.html") {
+                let contents = fs.readFileSync(path.join(p, "index.html")).toString();
+
+                contents = contents.replace("<head>", "<head><script src='/.well-known/ducky.js'></script>");
+
+                res.write(contents);
+                res.end();
+
+                return;
             }
 
             next();
@@ -43,6 +66,6 @@ export default class Live {
 
         this.app.use(this.staticHandler);
 
-        this.app.listen(8888);
+        this.app.listen(this.port);
     }
 }

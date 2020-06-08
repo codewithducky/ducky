@@ -2,21 +2,10 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-import * as FormData from 'form-data'; 
-import * as fs from 'fs';
-import * as http from 'http';
-
-import axios from 'axios';
-
 import * as path from 'path';
 
 import Live from './live';
-import { promisify } from 'util';
-
-interface ReportError {
-	expected: string | undefined;
-	got: string | undefined;
-};
+import { Ducky, ReportError } from './ducky';
 
 let statusBarItem : vscode.StatusBarItem;
 
@@ -26,7 +15,9 @@ export function activate(context: vscode.ExtensionContext) {
 	let goLiveCommand = vscode.commands.registerTextEditorCommand("ducky.goLive", (editor : vscode.TextEditor) => {
 		let path = vscode.workspace.getWorkspaceFolder(editor.document.uri)!.uri.fsPath;
 
-		Live.get(path);
+		let live = Live.get(path);
+
+		vscode.window.showInformationMessage("Server is now live at localhost:" + live.port);
 	});
 
 	context.subscriptions.push(goLiveCommand);
@@ -44,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		snapshot(editor.document)
+		Ducky.makeSnapshot(editor.document)
 
 		vscode.window.showInformationMessage('Successfully lodged a snapshot!');
 	});
@@ -69,9 +60,9 @@ export function activate(context: vscode.ExtensionContext) {
 			.then(out => {
 				obj.got = out;
 
-				return snapshot(editor.document);
+				return Ducky.makeSnapshot(editor.document);
 			}).then(id => {
-				return report(<number>id, obj);
+				return Ducky.makeReport(<number>id, obj);
 			})
 			.then(resp => {
 				console.log("report resp", resp);
@@ -81,43 +72,6 @@ export function activate(context: vscode.ExtensionContext) {
 	})
 
 	context.subscriptions.push(reportCommand);
-}
-
-function report(snapshotID: number, err : ReportError) : Thenable<any> {
-	return axios.post("http://localhost:3000/reports",
-	{
-		project_hash: "not_ready_for_prod",
-		data: err,
-		snapshot_id: snapshotID,
-	})
-}
-
-function snapshot(document : vscode.TextDocument) : Thenable<number | void | undefined>{
-	let workspace = vscode.workspace.getWorkspaceFolder(document.uri);
-
-	const form = new FormData();
-
-	form.append('files[]', fs.createReadStream(document.uri.fsPath));
-
-	return axios.post("http://localhost:3000/snapshots", form, {
-		headers: {
-		...form.getHeaders()
-		}
-	})
-	.then(data => {
-		console.log("then", data);
-
-		return new Promise<number | void | undefined>(
-			(acc, rej) => {
-				if (!data.data.ok) {
-					rej(data.data);
-
-					return;
-				}
-
-				acc(data.data.id)
-			});
-	})
 }
 
 // this method is called when your extension is deactivated
