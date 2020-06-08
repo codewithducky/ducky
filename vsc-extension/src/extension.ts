@@ -4,82 +4,121 @@ import * as vscode from 'vscode';
 
 import * as FormData from 'form-data'; 
 import * as fs from 'fs';
+import * as http from 'http';
 
 import axios from 'axios';
 
 import * as path from 'path';
-import { resolveCliPathFromVSCodeExecutablePath } from 'vscode-test';
+
+import Live from './live';
+import { promisify } from 'util';
+
+interface ReportError {
+	expected: string | undefined;
+	got: string | undefined;
+};
+
+let statusBarItem : vscode.StatusBarItem;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Congratulations, your extension "ducky" is now active!');
+	let goLiveCommand = vscode.commands.registerTextEditorCommand("ducky.goLive", (editor : vscode.TextEditor) => {
+		let path = vscode.workspace.getWorkspaceFolder(editor.document.uri)!.uri.fsPath;
 
-	let disposable = vscode.commands.registerTextEditorCommand('ducky.snapshot', (editor: vscode.TextEditor) => {
-		if (editor.document.isUntitled) {
-			vscode.window.showErrorMessage("You can't snapshot an untitled file! Save it and try again :)");
+		Live.get(path);
+	});
 
+	context.subscriptions.push(goLiveCommand);
+
+	statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+	statusBarItem.text = "Go live!";
+	statusBarItem.command = 'ducky.goLive';
+
+	context.subscriptions.push(statusBarItem);
+
+	let snapshotCommand = vscode.commands.registerTextEditorCommand('ducky.snapshot', (editor: vscode.TextEditor) => {
+		if (editor.document.fileName != "sketch.js") {
+			vscode.window.showErrorMessage("You can only Snapshot sketch.js files!");
+	
 			return;
 		}
 
-		let workspace = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+		snapshot(editor.document)
 
-		let p = path.relative(workspace?.uri.fsPath!, editor.document.uri.fsPath);
-
-		console.log(p);
-
-		const form = new FormData();
-
-		form.append('files[]', fs.createReadStream(editor.document.uri.fsPath));
-
-		const request_config = {
-			headers: {
-			...form.getHeaders()
-			}
-		};
-
-		axios.post("http://localhost:3000/snapshots", form, request_config);
-
-		vscode.window.showInformationMessage('Hello World!');
+		vscode.window.showInformationMessage('Successfully lodged a snapshot!');
 	});
 
-	// console.log(vscode.window.activeTextEditor.document.uri.fsPath);
+	context.subscriptions.push(snapshotCommand);
 
-	context.subscriptions.push(disposable);
+	let reportCommand = vscode.commands.registerTextEditorCommand("ducky.report", (editor : vscode.TextEditor) => {
+		if (path.basename(editor.document.fileName) != "sketch.js") {
+			vscode.window.showErrorMessage("You can only Snapshot sketch.js files!");
+	
+			return;
+		}
+
+		let obj : ReportError = {expected: "", got: ""};
+
+		vscode.window.showInputBox({prompt: "What are you expecting to happen?"})
+			.then(out => {
+				obj.expected = out;
+
+				return vscode.window.showInputBox({prompt: "What does happen?"})
+			})
+			.then(out => {
+				obj.got = out;
+
+				return snapshot(editor.document);
+			}).then(id => {
+				return report(<number>id, obj);
+			})
+			.then(resp => {
+				console.log("report resp", resp);
+
+				vscode.window.showInformationMessage("Successfully lodged an error report! Thank you :)");
+			})
+	})
+
+	context.subscriptions.push(reportCommand);
+}
+
+function report(snapshotID: number, err : ReportError) : Thenable<any> {
+	return axios.post("http://localhost:3000/reports",
+	{
+		project_hash: "not_ready_for_prod",
+		data: err,
+		snapshot_id: snapshotID,
+	})
+}
+
+function snapshot(document : vscode.TextDocument) : Thenable<number | void | undefined>{
+	let workspace = vscode.workspace.getWorkspaceFolder(document.uri);
+
+	const form = new FormData();
+
+	form.append('files[]', fs.createReadStream(document.uri.fsPath));
+
+	return axios.post("http://localhost:3000/snapshots", form, {
+		headers: {
+		...form.getHeaders()
+		}
+	})
+	.then(data => {
+		console.log("then", data);
+
+		return new Promise<number | void | undefined>(
+			(acc, rej) => {
+				if (!data.data.ok) {
+					rej(data.data);
+
+					return;
+				}
+
+				acc(data.data.id)
+			});
+	})
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
-
-
-// const form = document.querySelector("#my_form");
-// const image_upload = document.querySelector("#image_upload");
-// const results = document.querySelector("#results");
-// 
-// form.addEventListener("submit", e => {
-//   /* preventDefault, so that the page doesn't refresh */
-//   e.preventDefault();
-// //   /* you can fill the formData object automatically with all the data from the form */
-//   const formData = new FormData(form);
-// // // //   /* or you can can instantiate an empty FormData object and then fill it using append(). The three arguments to append are the key (equivalent to the name field on an input), the file itself, and an optional third argument for the filename. */
-//   const formData2 = new FormData();
-//   formData2.append(
-    // "image_file",
-    // image_upload.files[0],
-    // image_upload.files[0].name
-//   );
-// //   /* You can iterate through the FormData object to view its data (this is equivalent to using the .entries() method.) */
-//   for (const item of formData2) {
-    // results.innerHTML = `
-    //   <p><strong>name:</strong> ${item[0]}</p>
-    //   <p><strong>filename:</strong> ${item[1].name}</p>
-    //   <p><strong>size:</strong> ${item[1].size}</p>
-    //   <p><strong>type:</strong> ${item[1].type}</p>
-    // `;
-//   }
-// // //   /* once you've confirmed that the FormData object has all the proper data, send a fetch request. This particular request will go nowhere since I never defined the API_ROOT variable */
-//   fetch(`${API_ROOT}/uploads`, {
-    // method: "POST",
-    // body: formData
-//   });
-// });

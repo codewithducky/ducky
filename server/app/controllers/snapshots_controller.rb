@@ -11,9 +11,12 @@ class SnapshotsController < ApplicationController
 
   def create
     snapshot = Snapshot.create!(params.permit(files: []))
+    print(snapshot.inspect)
+
+    render json: {:ok => false} unless snapshot
 
     puts params
 
-    render plain: "ok"
+    render json: {:ok => true, :id => snapshot.id}
   end
 end

@@ -31,11 +31,14 @@
 		 <script src="lib/p5/addons/p5.sound.js"></script>
 	-->
 
+	<script>
+			window.addEventListener('error', function (e) {
+				fetch("localhost:8888/error?message=" + e.message)
+		})
+	</script>
 	<!-- here's where we include the actual sketch file -->
 	<script src="sketch.js"></script>
   </head>
-
   <body>
   </body>
-
 </html>

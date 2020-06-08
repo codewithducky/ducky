@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  project_hash: MyString
+  data: 
+
+two:
+  project_hash: MyString
+  data: 

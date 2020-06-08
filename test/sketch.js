@@ -1,8 +1,11 @@
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  // put setup code here
+  createCanvas(800, 600);
 }
 
 function draw() {
-  // put drawing code here
+  background("blue");
+
+  for (let i = 0; i < 10; i++) {
+    rect(i * 10, 0, 8, 8);
+  }
 }

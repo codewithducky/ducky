@@ -1,0 +1,46 @@
+<h1><%= @report.created_at %></h1>
+
+<table border="1">
+    <tr>
+	<th>Got</th>
+	<th>Expected</th>
+	<th>Runtime error?</th>
+    </tr>
+
+    <tr>
+	<td><%= @report.data["got"] %></td>
+	<td><%= @report.data["expected"] %></td>
+	<td></td>
+    </tr>
+</table>
+
+<h2>Files</h2>
+
+<ul>
+    <% @report.snapshot.files.each do |file| %>
+        <li><a href="<%= url_for(file) %>"><%= file.blob.filename %></a></li>
+    <% end %>
+</ul>
+
+<h2>Code</h2>
+
+<%= react_component('Test', { fileURL: url_for(@report.snapshot.files.first) } ) %>
+
+<h2>Error Classification</h2>
+
+<br />
+
+<form>
+    <select name="classification" id="classification">
+	<option value="syntax/semicolon">syntax/semicolon</option>
+	<option value="syntax/parens">syntax/parens</option>
+	<option value="domain/p5misunderstanding">doomain/p5misunderstanding</option>
+    </select>
+
+<br />
+<label for="comment">
+Comment:
+</label>
+	<textarea name="comment">
+	</textarea>
+</form>
