@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import * as express from 'express';
 import * as serveStatic from 'serve-static';
 
@@ -33,6 +34,14 @@ export default class Live {
         this.staticHandler = serveStatic(p);
 
         this.app.get("/.well-known/error", (req, res) => {
+            console.log(req.params);
+
+            vscode.window.showInformationMessage(
+                "You ran into some errors last time you ran your code. Want to report one?",
+                "Report: " + req.query["message"],
+            ).then(selection => {
+            });
+
             res.end();
         })
 
@@ -43,9 +52,10 @@ console.log("successfully injected ducky code");
 window.addEventListener('error', function (e) {
     console.log("making error");
     console.log(e);
-    fetch("/.well-known/error?message=" + e.message)
-})
-            `);
+    let msg = encodeURIComponent(e.message);
+    console.log(msg);
+    fetch("/.well-known/error?message=" + msg)
+})`);
             res.end();
         })
 
