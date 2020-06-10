@@ -29,13 +29,13 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(statusBarItem);
 
 	let snapshotCommand = vscode.commands.registerTextEditorCommand('ducky.snapshot', (editor: vscode.TextEditor) => {
-		if (editor.document.fileName != "sketch.js") {
+		if (editor.document.fileName !== "sketch.js") {
 			vscode.window.showErrorMessage("You can only Snapshot sketch.js files!");
 	
 			return;
 		}
 
-		Ducky.makeSnapshot(editor.document)
+		Ducky.makeSnapshot(editor.document);
 
 		vscode.window.showInformationMessage('Successfully lodged a snapshot!');
 	});
@@ -43,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(snapshotCommand);
 
 	let reportCommand = vscode.commands.registerTextEditorCommand("ducky.report", (editor : vscode.TextEditor) => {
-		if (path.basename(editor.document.fileName) != "sketch.js") {
+		if (path.basename(editor.document.fileName) == "sketch.js") {
 			vscode.window.showErrorMessage("You can only Snapshot sketch.js files!");
 	
 			return;
@@ -55,7 +55,7 @@ export function activate(context: vscode.ExtensionContext) {
 			.then(out => {
 				obj.expected = out;
 
-				return vscode.window.showInputBox({prompt: "What does happen?"})
+				return vscode.window.showInputBox({prompt: "What does happen?"});
 			})
 			.then(out => {
 				obj.got = out;
@@ -68,8 +68,8 @@ export function activate(context: vscode.ExtensionContext) {
 				console.log("report resp", resp);
 
 				vscode.window.showInformationMessage("Successfully lodged an error report! Thank you :)");
-			})
-	})
+			});
+	});
 
 	context.subscriptions.push(reportCommand);
 }
