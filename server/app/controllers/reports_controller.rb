@@ -13,7 +13,7 @@ class ReportsController < ApplicationController
     report = nil 
 
     report = Report.create(
-      params.require(:report).permit(:snapshot_id, :project_hash, data: ['got', 'expected'])
+      params.require(:report).permit(:snapshot_id, data: ['got', 'expected', 'message'])
     )
 
     if report.nil?

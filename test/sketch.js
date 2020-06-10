@@ -1,5 +1,5 @@
 function setup() {
-  createCanvas(800, x);
+  createCanvas(800, 200);
 }
 
 function draw() {
@@ -8,4 +8,6 @@ function draw() {
   for (let i = 0; i < 10; i++) {
     rect(i * 10, 0, 8, 8);
   }
+
+  console.log('hello');
 }

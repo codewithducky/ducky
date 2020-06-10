@@ -41,7 +41,8 @@ export default class Live {
                 "Report: " + req.query["message"]
             ).then(s => {
                 selection = s!;
-                return Ducky.makeSnapshotFromPath(path.join(p, "index.html"));
+
+                return Ducky.makeSnapshotFromPath(path.join(p, "sketch.js"));
             }).then(id => {
                 return Ducky.makeReport(<number>id, { message: selection! });
             }).then(() => {
