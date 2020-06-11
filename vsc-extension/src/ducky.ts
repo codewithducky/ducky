@@ -13,7 +13,7 @@ export interface ReportError {
 
 export class Ducky {
     public static makeReport(snapshotID: number, err : ReportError) : Thenable<any> {
-        return axios.post("http://localhost:3000/reports",
+        return axios.post("http://localhost:3000/api/reports",
         {
             project_hash: "not_ready_for_prod",
             data: err,
@@ -30,7 +30,7 @@ export class Ducky {
     
         form.append('files[]', fs.createReadStream(filePath));
 
-        return axios.post("http://localhost:3000/snapshots", form, {
+        return axios.post("http://localhost:3000/api/snapshots", form, {
             headers: {
             ...form.getHeaders()
             }

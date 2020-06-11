@@ -29,8 +29,8 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(statusBarItem);
 
 	let snapshotCommand = vscode.commands.registerTextEditorCommand('ducky.snapshot', (editor: vscode.TextEditor) => {
-		if (editor.document.fileName !== "sketch.js") {
-			vscode.window.showErrorMessage("You can only Snapshot sketch.js files!");
+		if (path.basename(editor.document.fileName) !== "sketch.js") {
+			vscode.window.showErrorMessage("You can only Snapshot sketch.js files!" + editor.document.fileName);
 	
 			return;
 		}
@@ -43,8 +43,8 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(snapshotCommand);
 
 	let reportCommand = vscode.commands.registerTextEditorCommand("ducky.report", (editor : vscode.TextEditor) => {
-		if (path.basename(editor.document.fileName) == "sketch.js") {
-			vscode.window.showErrorMessage("You can only Snapshot sketch.js files!");
+		if (path.basename(editor.document.fileName) !== "sketch.js") {
+			vscode.window.showErrorMessage("You can only Snapshot sketch.js files!" + editor.document.fileName);
 	
 			return;
 		}
