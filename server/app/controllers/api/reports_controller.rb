@@ -1,4 +1,4 @@
-class Api::ReportsController < Api::ApiController
+class API::ReportsController < API::APIController
   def create
     report = Report.create(
       params.require(:report).permit(:snapshot_id, data: ['got', 'expected', 'message'])

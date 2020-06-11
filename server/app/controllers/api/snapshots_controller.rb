@@ -1,4 +1,4 @@
-class Api::SnapshotsController < Api::ApiController
+class API::SnapshotsController < API::APIController
   def create
     snapshot = Snapshot.create!(params.permit(files: []))
     print(snapshot.inspect)
