@@ -3,6 +3,8 @@
 import * as vscode from 'vscode';
 
 import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
 
 import Live from './live';
 import { Ducky, ReportError } from './ducky';
@@ -12,6 +14,37 @@ let statusBarItem : vscode.StatusBarItem;
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	let consentCommand = vscode.commands.registerCommand('ducky.consent', () => {
+		const panel = vscode.window.createWebviewPanel(
+			'duckyConsent', // Identifies the type of the webview. Used internally
+			'Consent to Ducky', // Title of the panel displayed to the user
+			vscode.ViewColumn.Beside, // Editor column to show the new webview panel in.
+			{
+				enableScripts: true,
+			}
+		  );
+
+		const filePath: vscode.Uri = vscode.Uri.file(path.join(context.extensionPath, 'consent.html'));
+		panel.webview.html = fs.readFileSync(filePath.fsPath, 'utf8');
+
+		panel.webview.onDidReceiveMessage(message => {
+			switch (message.command) {
+				case 'consent':
+					let uuid = Ducky.makeMachine().then(uuid => {
+						vscode.window.showInformationMessage("You've consented! Start collecting errors. UUID: " + uuid);
+
+						fs.writeFileSync(path.join(os.homedir(), ".ducky"), uuid);
+					});
+
+					break;
+			}
+		},
+		undefined,
+		context.subscriptions);
+	});
+
+	context.subscriptions.push(consentCommand);
+
 	let goLiveCommand = vscode.commands.registerTextEditorCommand("ducky.goLive", (editor : vscode.TextEditor) => {
 		let path = vscode.workspace.getWorkspaceFolder(editor.document.uri)!.uri.fsPath;
 

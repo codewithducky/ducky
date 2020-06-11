@@ -1,7 +1,6 @@
 class API::SnapshotsController < API::APIController
   def create
     snapshot = Snapshot.create!(params.permit(files: []))
-    print(snapshot.inspect)
 
     render json: {:ok => false} unless snapshot
 

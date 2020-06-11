@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
 
 import * as FormData from 'form-data'; 
+import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 
 import axios from 'axios';
 
@@ -18,6 +20,7 @@ export class Ducky {
             project_hash: "not_ready_for_prod",
             data: err,
             snapshot_id: snapshotID,
+            uuid: fs.readFileSync(path.join(os.homedir(), ".ducky")).toString(),
         });
     }
 
@@ -39,13 +42,27 @@ export class Ducky {
             return new Promise<number | void | undefined>(
                 (acc, rej) => {
                     if (!data.data.ok) {
-                        rej(data.data);
+                        rej();
     
                         return;
                     }
     
                     acc(data.data.id);
                 });
+        });
+    }
+
+    public static makeMachine() : Thenable<string> {
+        return axios.post("http://localhost:3000/api/machines").then(data => {
+            return new Promise<string>((acc, rej) => {
+                if (data.data.ok) {
+                    acc(data.data.uuid);
+
+                    return;
+                }
+
+                rej();
+            });
         });
     }
 }

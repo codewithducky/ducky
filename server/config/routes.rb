@@ -9,6 +9,6 @@ Rails.application.routes.draw do
   resources :login
 
   namespace :api do
-    resources :snapshots, :reports, only: [:create]
+    resources :snapshots, :reports, :machines, only: [:create]
   end
 end

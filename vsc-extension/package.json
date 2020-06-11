@@ -26,6 +26,10 @@
 			{
 				"command": "ducky.report",
 				"title": "I have an error!"
+			},
+			{
+				"command": "ducky.consent",
+				"title": "Consent to Ducky"
 			}
 		]
 	},

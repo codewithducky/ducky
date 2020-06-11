@@ -1,0 +1,2 @@
+module API::MachineHelper
+end

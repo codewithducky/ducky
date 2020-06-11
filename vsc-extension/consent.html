@@ -1,0 +1,14 @@
+<h1>Ducky</h1>
+
+<p>A spiel will go here informing participants that they're participating in an experiment. It will tell them they will not be personally identified in any research outputs, and that the dataset of errors we collect will not be released to the public.</p>
+
+<button onclick="submit()">I consent to participate in this research</button>
+
+<script>
+    const vscode = acquireVsCodeApi();
+    function submit() {
+        vscode.postMessage({
+            command: 'consent',
+        })
+    }
+</script>
