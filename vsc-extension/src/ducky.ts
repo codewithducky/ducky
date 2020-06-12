@@ -13,14 +13,44 @@ export interface ReportError {
     message?: string;
 }
 
+export enum Consent {
+    None,
+    No,
+    Yes
+}
+
 export class Ducky {
+    public static uuid? : string;
+
+    public static consentPath() : string {
+        return path.join(os.homedir(), ".ducky");
+    }
+
+    public static denyConsent() {
+        fs.writeFileSync(this.consentPath(), "");
+    }
+
+    public static getConsentStatus() : Consent {
+        if (fs.existsSync(this.consentPath())) {
+            this.uuid = fs.readFileSync(this.consentPath()).toString();
+
+            if (this.uuid!.length > 0) {
+                return Consent.Yes;
+            }
+
+            return Consent.No;
+        }
+
+        return Consent.None;
+    }
+
     public static makeReport(snapshotID: number, err : ReportError) : Thenable<any> {
         return axios.post("http://localhost:3000/api/reports",
         {
             project_hash: "not_ready_for_prod",
             data: err,
             snapshot_id: snapshotID,
-            uuid: fs.readFileSync(path.join(os.homedir(), ".ducky")).toString(),
+            uuid: this.uuid!,
         });
     }
 
@@ -56,6 +86,10 @@ export class Ducky {
         return axios.post("http://localhost:3000/api/machines").then(data => {
             return new Promise<string>((acc, rej) => {
                 if (data.data.ok) {
+                    this.uuid = data.data.uuid;
+
+                    fs.writeFileSync(this.consentPath(), data.data.uuid);
+
                     acc(data.data.uuid);
 
                     return;

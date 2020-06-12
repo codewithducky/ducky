@@ -4,7 +4,7 @@ import * as serveStatic from 'serve-static';
 
 import * as path from 'path';
 import * as fs from 'fs';
-import { Ducky } from './ducky';
+import { Ducky, Consent } from './ducky';
 
 export default class Live {
     public static instances : Record<string, Live> = {};
@@ -67,6 +67,12 @@ window.addEventListener('error', function (e) {
         });
 
         this.app.use((req, res, next) => {
+            if (Ducky.getConsentStatus() !== Consent.Yes) {
+                next();
+
+                return;
+            }
+
             if (req.path === "/" || req.path === "/index.html") {
                 let contents = fs.readFileSync(path.join(p, "index.html")).toString();
 

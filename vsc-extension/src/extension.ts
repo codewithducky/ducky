@@ -7,9 +7,15 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 import Live from './live';
-import { Ducky, ReportError } from './ducky';
+import { Ducky, ReportError, Consent } from './ducky';
 
 let statusBarItem : vscode.StatusBarItem;
+
+function requestConsent() {
+	vscode.window.showErrorMessage("In order to report errors you need to consent to use Ducky. Would you like to?", "Show me the way!").then(() => {
+		vscode.commands.executeCommand("ducky.consent");
+	});
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -29,15 +35,23 @@ export function activate(context: vscode.ExtensionContext) {
 
 		panel.webview.onDidReceiveMessage(message => {
 			switch (message.command) {
-				case 'consent':
-					let uuid = Ducky.makeMachine().then(uuid => {
-						vscode.window.showInformationMessage("You've consented! Start collecting errors. UUID: " + uuid);
-
-						fs.writeFileSync(path.join(os.homedir(), ".ducky"), uuid);
+				case 'yes': {
+					Ducky.makeMachine().then(uuid => {
+						vscode.window.showInformationMessage("You've consented. Time to start collecting errors!");
 					});
 
 					break;
+				}
+				case 'no': {
+					Ducky.denyConsent();
+
+					vscode.window.showInformationMessage("You've opted to not consent to Ducky, that's cool -- we won't collect any data from you.");
+
+					break;
+				}
 			}
+
+			panel.dispose();
 		},
 		undefined,
 		context.subscriptions);
@@ -62,6 +76,12 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(statusBarItem);
 
 	let snapshotCommand = vscode.commands.registerTextEditorCommand('ducky.snapshot', (editor: vscode.TextEditor) => {
+		if (Ducky.getConsentStatus() !== Consent.Yes) {
+			requestConsent();
+
+			return;
+		}
+
 		if (path.basename(editor.document.fileName) !== "sketch.js") {
 			vscode.window.showErrorMessage("You can only Snapshot sketch.js files!" + editor.document.fileName);
 	
@@ -76,6 +96,12 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(snapshotCommand);
 
 	let reportCommand = vscode.commands.registerTextEditorCommand("ducky.report", (editor : vscode.TextEditor) => {
+		if (Ducky.getConsentStatus() !== Consent.Yes) {
+			requestConsent();
+
+			return;
+		}
+
 		if (path.basename(editor.document.fileName) !== "sketch.js") {
 			vscode.window.showErrorMessage("You can only Snapshot sketch.js files!" + editor.document.fileName);
 	
@@ -105,6 +131,10 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(reportCommand);
+
+	if (Ducky.getConsentStatus() === Consent.None) {
+		vscode.commands.executeCommand("ducky.consent");
+	}
 }
 
 // this method is called when your extension is deactivated
