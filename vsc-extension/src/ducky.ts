@@ -19,6 +19,9 @@ export enum Consent {
     Yes
 }
 
+const API_URL = "http://localhost:3000";
+
+
 export class Ducky {
     public static uuid? : string;
 
@@ -45,9 +48,8 @@ export class Ducky {
     }
 
     public static makeReport(snapshotID: number, err : ReportError) : Thenable<any> {
-        return axios.post("http://localhost:3000/api/reports",
+        return axios.post(API_URL + "/api/reports",
         {
-            project_hash: "not_ready_for_prod",
             data: err,
             snapshot_id: snapshotID,
         });
@@ -64,7 +66,7 @@ export class Ducky {
         form.append("project", path.basename(path.dirname(filePath)));
         form.append('files[]', fs.createReadStream(filePath));
 
-        return axios.post("http://localhost:3000/api/snapshots", form, {
+        return axios.post(API_URL + "/api/snapshots", form, {
             headers: {
             ...form.getHeaders()
             }
@@ -84,7 +86,7 @@ export class Ducky {
     }
 
     public static makeMachine() : Thenable<string> {
-        return axios.post("http://localhost:3000/api/machines").then(data => {
+        return axios.post(API_URL + "api/machines").then(data => {
             return new Promise<string>((acc, rej) => {
                 if (data.data.ok) {
                     this.uuid = data.data.uuid;
