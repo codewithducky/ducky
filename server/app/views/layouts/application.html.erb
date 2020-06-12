@@ -1,15 +1,35 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Server</title>
+    <head>
+        <title>Server</title>
 
-    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
-    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+        <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+        <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
 
-    <link rel="stylesheet" href="https://unpkg.com/mvp.css">
-  </head>
+        <link rel="stylesheet" href="https://unpkg.com/mvp.css">
 
-  <body>
-    <%= yield %>
-  </body>
+<style>
+nav {
+    margin-bottom: 0em;
+}
+</style>
+    </head>
+
+    <body>
+        <header>
+            <nav>
+                <a href="/"><img alt="Logo" src="https://via.placeholder.com/400x140?text=Ducky" height="70"></a>
+
+                <ul>
+                    <% [["/reports", "Reports"], ["/snapshots", "Snapshots"]].each do |link| %>
+                        <li><%= link_to_unless(current_page?(link[0]), link[1], link[0]) %></li>
+                    <% end %>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+        <%= yield %>
+        </main>
+    </body>
 </html>

@@ -1,46 +1,42 @@
-<h1><%= @report.created_at %></h1>
+<h1>Report <%= @report.id %> for project "<%= @report.snapshot.project %>"</h1>
 
-<table border="1">
+<p>This report was made on <%= @report.created_at.strftime("%F") %> by a machine with UUID <%= @report.snapshot.machine.uuid %></p>
+
+<% unless @report.previous.nil? %>
+    <%= link_to "View the previous report by this user for this project.", @report.previous %>
+<% end %>
+
+<% unless @report.next.nil? %>
+    <%= link_to "View the next report by this user for this project.", @report.next %>
+<% end %>
+
+<br />
+
+<h2>Data</h2>
+
+<table>
     <tr>
-	<th>Got</th>
-	<th>Expected</th>
-	<th>Runtime error?</th>
+        <th>Got</th>
+        <th>Expected</th>
+        <th>Runtime error?</th>
     </tr>
 
     <tr>
-	<td><%= @report.data["got"] %></td>
-	<td><%= @report.data["expected"] %></td>
-	<td><%= @report.data["message"] %></td>
+        <td><%= @report.data["got"] %></td>
+        <td><%= @report.data["expected"] %></td>
+        <td><%= @report.data["message"] %></td>
     </tr>
 </table>
-
-<h2>Files</h2>
-
-<ul>
-    <% @report.snapshot.files.each do |file| %>
-        <li><a href="<%= url_for(file) %>"><%= file.blob.filename %></a></li>
-    <% end %>
-</ul>
 
 <h2>Code</h2>
 
 <%= react_component('Test', { fileURL: url_for(@report.snapshot.files.first) } ) %>
 
-<h2>Error Classification</h2>
+<h2>Reviewing</h2>
 
-<br />
+<%= form_with(url: "/reports/" + @report.id.to_s, method: "put") do %>
+    <%= label_tag(:comment, "comment") %>
+    <%= text_area(:report, :comment) %>
 
-<form>
-    <select name="classification" id="classification">
-	<option value="syntax/semicolon">syntax/semicolon</option>
-	<option value="syntax/parens">syntax/parens</option>
-	<option value="domain/p5misunderstanding">doomain/p5misunderstanding</option>
-    </select>
-
-<br />
-<label for="comment">
-Comment:
-</label>
-	<textarea name="comment">
-	</textarea>
-</form>
+    <%= submit_tag("Update comment") %>
+<% end %>

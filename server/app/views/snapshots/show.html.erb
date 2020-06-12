@@ -1,3 +1,11 @@
+<% unless @snapshot.previous.nil? %>
+    <%= link_to "View previous snapshot", @snapshot.previous %>
+<% end %>
+
+<% unless @snapshot.next.nil? %>
+    <%= link_to "View next snapshot", @snapshot.next %>
+<% end %>
+
 <ul>
     <% @snapshot.files.each do |file| %>
         <li><a href="<%= url_for(file) %>"><%= file.blob.filename %></a></li>
