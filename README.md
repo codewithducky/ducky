@@ -1,38 +1,39 @@
 # Ducky
 
-Programming is hard, and learning it is harder -- I want to make it easier.
+Programming is hard, and learning it is even harder. Ducky is a step in the
+direction of making that easier, it is a VSCode extension that can be used to
+collect error reports from novice programmers using p5.js.
 
-The idea of creating an intelligent tutoring system which can assist novice
-programmers in their journey learning to code is not original, there's plenty
-of literature describing attempts to make such a thing. Ducky is my own attempt
-to create such a piece of software, except it's not quite there yet. We're
-currently in [phase A](#phase-a) of this project.
+There's two separate projects in this repository:
 
-What makes Ducky different?
+1. The web app (a Rails 6 web app consisting of a RESTful API for data
+   collection, and an authenticated dashboard for viewing the collected data)
+2. The extension (a VSCode extension which interacts with the RESTful API and
+   provides a development server for writing p5.js code)
 
-1. Ducky is based on empirical evidence. I'm not going to say this works or
-   doesn't work until I actually know what effects it has on the learning
-   outcomes of students who use it.
-2. It has a very narrow applicable domain. Ducky helps students learn p5.js and
-   JavaScript. No more, no less.
+## Installation
 
-The core beliefs of Ducky:
+The following guide assumes:
 
-1. In order to learn you have to struggle. Ducky should never hand you the
-   answer to a problem.
-2. Humans are better at doing some things than robots, and humans should do
-   those things when possible.
-3. Privacy and FOSS are important. Attempts should be made to anonymise any
-   code of students which end up, on our servers.
+1. you're using some sort of *nix
+2. your `cwd` is the root of this repository
+3. you have postgres, ruby, and VSCode installed
 
-## Phase A
+### Web app
 
-In order to figure out whether this system is going to be useful to students we
-need to collect some data, this iteration of Ducky is responsible for doing that.
+1. `$ cd server`
+2. `$ bundle install` (if you don't have postgres installed, you'll find out
+   here)
+3. `$ yarn install`
+4. `$ rails db:create`
+5. `$ rails s`
+6. the server should now be running on localhost:3000!
 
-1. Collect data about different kinds of errors
-2. Start coming up with strategies to virtually resolve these errors
+### The extension
 
-## Phase B
-
-This is the phase of Ducky where it will actually become useful in the way I wanted it to be: detecting errors in real time and providing feedback.
+1. `$ cd vsc-extension`
+2. `$ yarn install`
+3. `$ code .`
+4. from here you can test the extension by entering debug mode in the workspace
+5. there's a "test workspace" in the `test` folder of this repository, if you
+   open that you will find yourself in an environment which mimics a COMP1720 lab.
