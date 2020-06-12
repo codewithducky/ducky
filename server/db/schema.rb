@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_06_11_022552) do
+ActiveRecord::Schema.define(version: 2020_06_12_033432) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -48,18 +48,18 @@ ActiveRecord::Schema.define(version: 2020_06_11_022552) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.bigint "snapshot_id"
-    t.bigint "machine_id"
-    t.index ["machine_id"], name: "index_reports_on_machine_id"
     t.index ["snapshot_id"], name: "index_reports_on_snapshot_id"
   end
 
   create_table "snapshots", force: :cascade do |t|
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.bigint "machine_id"
+    t.string "project"
+    t.index ["machine_id"], name: "index_snapshots_on_machine_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "machines", "reports"
-  add_foreign_key "reports", "machines"
   add_foreign_key "reports", "snapshots"
+  add_foreign_key "snapshots", "machines"
 end

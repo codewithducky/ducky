@@ -6,5 +6,4 @@ class Machine < ApplicationRecord
       m.uuid = SecureRandom.uuid
     end
   end
-
 end

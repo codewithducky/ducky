@@ -50,7 +50,6 @@ export class Ducky {
             project_hash: "not_ready_for_prod",
             data: err,
             snapshot_id: snapshotID,
-            uuid: this.uuid!,
         });
     }
 
@@ -61,6 +60,8 @@ export class Ducky {
     public static makeSnapshotFromPath(filePath : string) : Thenable<number | void | undefined> {
         const form = new FormData();
     
+        form.append("uuid", this.uuid!);
+        form.append("project", path.basename(path.dirname(filePath)));
         form.append('files[]', fs.createReadStream(filePath));
 
         return axios.post("http://localhost:3000/api/snapshots", form, {

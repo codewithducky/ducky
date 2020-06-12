@@ -1,8 +1,15 @@
 class API::SnapshotsController < API::APIController
   def create
-    snapshot = Snapshot.create!(params.permit(files: []))
+    snapshot = Snapshot.new(params.permit(:project, files: []))
+    snapshot.machine = Machine.find_by(uuid: params['uuid'])
 
-    render json: {:ok => false} unless snapshot
+    snapshot.save!
+
+    if snapshot.nil?
+      render json: {:ok => false}
+
+      return
+    end
 
     render json: {:ok => true, :id => snapshot.id}
   end
