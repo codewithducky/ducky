@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 
 import * as path from 'path';
 import * as fs from 'fs';
-import * as os from 'os';
 
 import Live from './live';
 import { Ducky, ReportError, Consent } from './ducky';
@@ -16,6 +15,8 @@ function requestConsent() {
 		vscode.commands.executeCommand("ducky.consent");
 	});
 }
+
+let goLiveStatusBarItem: vscode.StatusBarItem;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -37,6 +38,10 @@ export function activate(context: vscode.ExtensionContext) {
 			switch (message.command) {
 				case 'yes': {
 					Ducky.makeMachine().then(uuid => {
+						if (uuid === undefined) {
+							return;
+						}
+
 						vscode.window.showInformationMessage("You've consented. Time to start collecting errors!");
 					});
 
@@ -62,18 +67,27 @@ export function activate(context: vscode.ExtensionContext) {
 	let goLiveCommand = vscode.commands.registerTextEditorCommand("ducky.goLive", (editor : vscode.TextEditor) => {
 		let path = vscode.workspace.getWorkspaceFolder(editor.document.uri)!.uri.fsPath;
 
-		let live = Live.get(path);
+		let live = Live.instances[path];
+		if (live === undefined) {
+			live = Live.start(path);
 
-		vscode.window.showInformationMessage("Server is now live at localhost:" + live.port);
+			goLiveStatusBarItemKill(live.port);
+
+			vscode.window.showInformationMessage("Started the live server! View it by going to http://localhost:" + live.port);
+
+			vscode.env.openExternal(vscode.Uri.parse("http://localhost:" + live.port));
+
+			return;
+		}
+
+		Live.kill(path);
+
+		goLiveStatusBarItemLive();
+
+		vscode.window.showInformationMessage("Stopped live server!");
 	});
 
 	context.subscriptions.push(goLiveCommand);
-
-	statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-	statusBarItem.text = "Go live!";
-	statusBarItem.command = 'ducky.goLive';
-
-	context.subscriptions.push(statusBarItem);
 
 	let snapshotCommand = vscode.commands.registerTextEditorCommand('ducky.snapshot', (editor: vscode.TextEditor) => {
 		if (Ducky.getConsentStatus() !== Consent.Yes) {
@@ -124,10 +138,14 @@ export function activate(context: vscode.ExtensionContext) {
 				return Ducky.makeReport(<number>id, obj);
 			})
 			.then(resp => {
+				if (resp === undefined) {
+					return;
+				}
+
 				console.log("report resp", resp);
 
 				vscode.window.showInformationMessage("Successfully lodged an error report! Thank you :)");
-			})
+			});
 	});
 
 	context.subscriptions.push(reportCommand);
@@ -135,7 +153,26 @@ export function activate(context: vscode.ExtensionContext) {
 	if (Ducky.getConsentStatus() === Consent.None) {
 		vscode.commands.executeCommand("ducky.consent");
 	}
+
+	// create a new status bar item that we can now manage
+	goLiveStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+
+	goLiveStatusBarItem.show();
+	goLiveStatusBarItemLive();
+
+	context.subscriptions.push(goLiveStatusBarItem);
+
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+function goLiveStatusBarItemLive() {
+	goLiveStatusBarItem.command = 'ducky.goLive';
+	goLiveStatusBarItem.text = "$(broadcast) Go live (with Ducky)!";
+}
+
+function goLiveStatusBarItemKill(port: number) {
+	goLiveStatusBarItem.text = "$(stop) Serving at http://localhost:" + port;
+	goLiveStatusBarItem.command = 'ducky.goLive';
+}

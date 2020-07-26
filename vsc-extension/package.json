@@ -40,6 +40,11 @@
 						"type": "string",
 						"default": "https://collect.codewithducky.com",
 						"description": "the Ducky API host (you probably only want to do this if you're tryna hack on Ducky)"
+					},
+					"ducky.port": {
+						"type": "number",
+						"default": 1720,
+						"description": "the port you want Ducky's live server to be on (change this if you already have something running on 1720!)"
 					}
 				}
 			}

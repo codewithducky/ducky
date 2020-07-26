@@ -19,7 +19,6 @@ export enum Consent {
     Yes
 }
 
-
 export class Ducky {
     public static uuid? : string;
 
@@ -50,6 +49,8 @@ export class Ducky {
         {
             data: err,
             snapshot_id: snapshotID,
+        }).catch(err => {
+            vscode.window.showErrorMessage("Wasn't able to submit error report. " + err);
         });
     }
 
@@ -80,10 +81,13 @@ export class Ducky {
     
                     acc(data.data.id);
                 });
+        })
+        .catch(err => {
+            vscode.window.showErrorMessage("Couldn't submit snapshot. " + err);
         });
     }
 
-    public static makeMachine() : Thenable<string> {
+    public static makeMachine() : Promise<string | void> {
         return axios.post(vscode.workspace.getConfiguration("ducky").apiHost + "/api/machines").then(data => {
             return new Promise<string>((acc, rej) => {
                 if (data.data.ok) {
@@ -98,6 +102,8 @@ export class Ducky {
 
                 rej();
             });
+        }).catch(err => {
+            vscode.window.showErrorMessage("Something has gone wrong setting issuing this machine a unique identifier. " + err);
         });
     }
 }

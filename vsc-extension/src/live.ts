@@ -5,32 +5,47 @@ import * as serveStatic from 'serve-static';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Ducky, Consent } from './ducky';
+import { Server } from 'http';
 
 export default class Live {
+    public static portOffset = 0;
     public static instances : Record<string, Live> = {};
 
-    public static get(workspace: string) : Live {
-        if (this.instances[workspace] === undefined) {
-            console.log("making new Live instance");
+    public static start(workspace: string) : Live {
+        console.log("making new Live instance");
 
-            this.instances[workspace] = new Live(workspace);
+        this.instances[workspace] = new Live(workspace);
 
-            return this.instances[workspace];
-        }
-        
-        console.log("using existing live instance");
+        this.portOffset += 1;
 
         return this.instances[workspace];
+    }
+
+    public static kill(workspace: string) : void {
+        if (this.instances[workspace] === undefined) {
+            console.log("can't kill a workspace that doesn't exist");
+
+            return;
+        }
+
+        let instance = this.instances[workspace];
+
+        instance.server.close();
+
+        delete this.instances[workspace];
+
+        this.portOffset -= 1;
     }
 
     public port : number = 0;
 
     private app : express.Express;
+    private server : Server;
 
     private staticHandler : express.Handler;
 
     constructor(p : string) {
-        this.port = 1720;
+        this.port = vscode.workspace.getConfiguration("ducky").port  + Live.portOffset;
         this.app = express();
         this.staticHandler = serveStatic(p);
 
@@ -89,6 +104,6 @@ window.addEventListener('error', function (e) {
 
         this.app.use(this.staticHandler);
 
-        this.app.listen(this.port);
+        this.server = this.app.listen(this.port);
     }
 }
