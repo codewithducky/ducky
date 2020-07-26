@@ -127,7 +127,7 @@ export function activate(context: vscode.ExtensionContext) {
 				console.log("report resp", resp);
 
 				vscode.window.showInformationMessage("Successfully lodged an error report! Thank you :)");
-			});
+			})
 	});
 
 	context.subscriptions.push(reportCommand);

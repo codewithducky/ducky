@@ -31,6 +31,18 @@
 				"command": "ducky.consent",
 				"title": "Consent to Ducky"
 			}
+		],
+		"configuration":[
+			{
+				"title": "Ducky",
+				"properties": {
+					"ducky.apiHost": {
+						"type": "string",
+						"default": "https://collect.codewithducky.com",
+						"description": "the Ducky API host (you probably only want to do this if you're tryna hack on Ducky)"
+					}
+				}
+			}
 		]
 	},
 	"scripts": {
