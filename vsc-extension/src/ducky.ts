@@ -87,8 +87,8 @@ export class Ducky {
         });
     }
 
-    public static makeMachine() : Promise<string | void> {
-        return axios.post(vscode.workspace.getConfiguration("ducky").apiHost + "/api/machines").then(data => {
+    public static makeMachine(email : string) : Promise<string | void> {
+        return axios.post(vscode.workspace.getConfiguration("ducky").apiHost + "/api/machines", { email }).then(data => {
             return new Promise<string>((acc, rej) => {
                 if (data.data.ok) {
                     this.uuid = data.data.uuid;

@@ -59,16 +59,26 @@
     Email: Human.Ethics.Officer@anu.edu.au <br />
 </blockquote>
 
-<p>In the future, there will also be a couple of demographic questions here.</p>
+<p id="warning" style="color: red;"></p>
+<p><label for="email">An email address we can contact you on: </label><input id="email" name="email" type="text" placeholder="uid@anu.edu.au"/></p> <br />
 
-<button onclick="accept()">I consent to participate in this research</button><br/>
+<button onclick="accept()">I consent to participate in this research</button><br/><br />
 <button onclick="reject()">I do consent to to participate in this research</button>
 
 <script>
 const vscode = acquireVsCodeApi();
 function accept() {
+    let email = document.getElementById("email").value;
+
+    if (email.length <= 3) {
+        document.getElementById("warning").textContent = "Please provide an email.";
+
+        return;
+    }
+
     vscode.postMessage({
         command: 'yes',
+        email: email,
     })
 }
 

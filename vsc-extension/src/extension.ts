@@ -37,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
 		panel.webview.onDidReceiveMessage(message => {
 			switch (message.command) {
 				case 'yes': {
-					Ducky.makeMachine().then(uuid => {
+					Ducky.makeMachine(message.email).then(uuid => {
 						if (uuid === undefined) {
 							return;
 						}
