@@ -3,9 +3,13 @@
 	"displayName": "ducky",
   "publisher": "ducky",
   "license": "MIT",
-	"description": "learning to program is hard.",
-	"version": "0.0.1",
-  "repository": "https://github.com/codewithducky/ducky",
+	"description": "learning to program is hard. help us make it easier by submitting some error reports.",
+	"icon": "ducky.png",
+	"version": "0.0.2",
+  	"repository": {
+	  "type": "git",
+	  "url": "https://github.com/codewithducky/ducky.git"
+	},
 	"engines": {
 		"vscode": "^1.45.0"
 	},
@@ -33,6 +37,10 @@
 			{
 				"command": "ducky.consent",
 				"title": "Consent to Ducky"
+			},
+			{
+				"command": "ducky.demographics",
+				"title": "Demographic Survey"
 			}
 		],
 		"configuration": [

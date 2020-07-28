@@ -64,6 +64,49 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(consentCommand);
 
+	let demographicsCommand = vscode.commands.registerCommand('ducky.demographics', () => {
+		const panel = vscode.window.createWebviewPanel(
+			'duckyDemographics', // Identifies the type of the webview. Used internally
+			'Demographic Survey', // Title of the panel displayed to the user
+			vscode.ViewColumn.Beside, // Editor column to show the new webview panel in.
+			{
+				enableScripts: true,
+			}
+		  );
+
+		const filePath: vscode.Uri = vscode.Uri.file(path.join(context.extensionPath, 'demographics.html'));
+		panel.webview.html = fs.readFileSync(filePath.fsPath, 'utf8');
+
+		panel.webview.onDidReceiveMessage(message => {
+			switch (message.command) {
+				case 'yes': {
+					Ducky.makeMachine(message.email).then(uuid => {
+						if (uuid === undefined) {
+							return;
+						}
+
+						vscode.window.showInformationMessage("You've consented. Time to start collecting errors!");
+					});
+
+					break;
+				}
+				case 'no': {
+					Ducky.denyConsent();
+
+					vscode.window.showInformationMessage("You've opted to not consent to Ducky, that's cool -- we won't collect any data from you.");
+
+					break;
+				}
+			}
+
+			panel.dispose();
+		},
+		undefined,
+		context.subscriptions);
+	});
+
+	context.subscriptions.push(demographicsCommand);
+
 	let goLiveCommand = vscode.commands.registerTextEditorCommand("ducky.goLive", (editor : vscode.TextEditor) => {
 		let path = vscode.workspace.getWorkspaceFolder(editor.document.uri)!.uri.fsPath;
 
