@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 import * as express from 'express';
+import * as ws from 'ws';
 import * as serveStatic from 'serve-static';
 
 import * as path from 'path';
 import * as fs from 'fs';
 import { Ducky, Consent } from './ducky';
-import { Server } from 'http';
+import { Server, maxHeaderSize } from 'http';
 
 export default class Live {
     public static portOffset = 0;
@@ -30,6 +31,7 @@ export default class Live {
 
         let instance = this.instances[workspace];
 
+        instance.wss.close();
         instance.server.close();
 
         delete this.instances[workspace];
@@ -37,9 +39,24 @@ export default class Live {
         this.portOffset -= 1;
     }
 
+    public static triggerReload(workspace: string) : void {
+        if (this.instances[workspace] === undefined) {
+            return;
+        }
+
+        console.log("triggering reload");
+
+        let instance = this.instances[workspace];
+
+        instance.wss.clients.forEach(e => {
+            e.send('reload');
+        })
+    }
+
     public port : number = 0;
 
     private app : express.Express;
+    private wss : ws.Server;
     private server : Server;
 
     private staticHandler : express.Handler;
@@ -70,6 +87,18 @@ export default class Live {
         this.app.get("/.well-known/ducky.js", (req, res) => {
             res.set('Content-Type', 'text/javascript');
             res.write(`
+const wss = new WebSocket('ws://' + location.host);
+
+wss.onmessage = e => {
+    if (e.data !== 'reload') {
+        return;
+    }
+
+    console.log('reloading');
+
+    window.location.reload();
+}  
+
 console.log("successfully injected ducky code");
 window.addEventListener('error', function (e) {
     console.log("making error");
@@ -105,5 +134,9 @@ window.addEventListener('error', function (e) {
         this.app.use(this.staticHandler);
 
         this.server = this.app.listen(this.port);
+
+        this.wss = new ws.Server({
+            server: this.server,
+        });
     }
 }

@@ -118,7 +118,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 			vscode.window.showInformationMessage("Started the live server! View it by going to http://localhost:" + live.port);
 
-			vscode.env.openExternal(vscode.Uri.parse("http://localhost:" + live.port));
+			let uri = vscode.Uri.parse("http://localhost:" + live.port);
+			vscode.env.openExternal(uri);
 
 			return;
 		}
@@ -205,6 +206,13 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(goLiveStatusBarItem);
 
+	vscode.workspace.onDidSaveTextDocument(document => {
+		// debounce(() => {
+			let path = vscode.workspace.getWorkspaceFolder(document.uri)!.uri.fsPath;
+		
+			Live.triggerReload(path);
+		// }, 2500);
+	});
 }
 
 // this method is called when your extension is deactivated
@@ -218,4 +226,18 @@ function goLiveStatusBarItemLive() {
 function goLiveStatusBarItemKill(port: number) {
 	goLiveStatusBarItem.text = "$(stop) Serving at http://localhost:" + port;
 	goLiveStatusBarItem.command = 'ducky.goLive';
+}
+
+// Returns a function, that, as long as it continues to be invoked, will not
+// be triggered. The function will be called after it stops being called for
+// N milliseconds. If `immediate` is passed, trigger the function on the
+// leading edge, instead of the trailing.
+function debounce<T extends Function>(cb: T, wait = 20) {
+    let h : NodeJS.Timeout;
+    let callable = (...args: any) => {
+        clearTimeout(h);
+        h = setTimeout(() => cb(...args), wait);
+	};
+
+    return <T>(<any>callable);
 }
